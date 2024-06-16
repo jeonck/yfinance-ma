@@ -3,6 +3,7 @@ import yfinance as yf
 import pandas as pd
 import plotly.graph_objects as go
 from datetime import datetime, timedelta
+import numpy as np
 
 # Streamlit 페이지 설정
 st.set_page_config(
@@ -19,6 +20,7 @@ ticker_input = st.text_input("Enter the stock ticker:", "MSFT")
 
 # 기간 선택
 period_options = {
+    "2 year":  2,
     "3 years": 3,
     "6 years": 6,
     "9 years": 9,
@@ -32,7 +34,7 @@ if selected_period == "Max":
     start_date = None
 else:
     end_date = datetime.today().strftime('%Y-%m-%d')
-    start_date = (datetime.today() - timedelta(days=period_options[selected_period]*365)).strftime('%Y-%m-%d')
+    start_date = (datetime.today() - timedelta(days=period_options[selected_period] * 365)).strftime('%Y-%m-%d')
 
 # 주식 데이터 가져오기
 ticker = yf.Ticker(ticker_input)
@@ -50,9 +52,17 @@ if not yf_data.empty:
     yf_data['120_MA'] = yf_data['Close'].rolling(window=120).mean()
     yf_data['200_MA'] = yf_data['Close'].rolling(window=200).mean()
 
+    # 120일 이동평균선의 기울기 계산
+    yf_data['120_MA_Slope'] = yf_data['120_MA'].diff()
+
+    # 기울기가 가장 낮은 지점 찾기
+    min_slope_idx = yf_data['120_MA_Slope'].idxmin()
+    min_slope_date = yf_data.loc[min_slope_idx].name
+    min_slope_value = yf_data.loc[min_slope_idx, '120_MA']
+
     # 그래프 그리기
     st.subheader(f"{ticker_input} Stock Price with Moving Averages ({selected_period})")
-    
+
     fig = go.Figure()
 
     fig.add_trace(go.Scatter(x=yf_data.index, y=yf_data['Close'], mode='lines', name='Close Price',
@@ -61,6 +71,12 @@ if not yf_data.empty:
                              line=dict(color='red')))
     fig.add_trace(go.Scatter(x=yf_data.index, y=yf_data['200_MA'], mode='lines', name='200-day MA',
                              line=dict(color='blue')))
+
+    # 기울기가 가장 낮은 지점 표시
+    fig.add_trace(go.Scatter(x=[min_slope_date], y=[min_slope_value], mode='markers+text', name='Lowest Slope Point',
+                             marker=dict(color='black', size=10),
+                             text=["Lowest Slope"],
+                             textposition="top center"))
 
     fig.update_layout(
         title=f"{ticker_input} Stock Price and Moving Averages ({selected_period})",
