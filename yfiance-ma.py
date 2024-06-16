@@ -106,3 +106,16 @@ if not yf_data.empty:
     st.plotly_chart(fig)
 else:
     st.error("No data found for the entered ticker.")
+
+# 뉴스 가져오기
+st.subheader(f"{ticker_input} News")
+news = ticker.news
+if news:
+    for article in news:
+        st.markdown(f"### [{article['title']}]({article['link']})")
+        st.markdown(f"Published on: {article.get('provider_publish_time', 'N/A')}")
+        st.markdown(f"Source: {article.get('publisher', 'N/A')}")
+        st.write(article.get('summary', 'No summary available'))
+        st.markdown("---")
+else:
+    st.write("No news found for the entered ticker.")
