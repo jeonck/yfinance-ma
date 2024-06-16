@@ -20,7 +20,6 @@ ticker_input = st.text_input("Enter the stock ticker:", "MSFT")
 
 # 기간 선택
 period_options = {
-    "2 year":  2,
     "3 years": 3,
     "6 years": 6,
     "9 years": 9,
@@ -55,10 +54,18 @@ if not yf_data.empty:
     # 120일 이동평균선의 기울기 계산
     yf_data['120_MA_Slope'] = yf_data['120_MA'].diff()
 
-    # 기울기가 가장 낮은 지점 찾기
-    min_slope_idx = yf_data['120_MA_Slope'].idxmin()
-    min_slope_date = yf_data.loc[min_slope_idx].name
-    min_slope_value = yf_data.loc[min_slope_idx, '120_MA']
+    # 200일 이동평균선의 기울기 계산
+    yf_data['200_MA_Slope'] = yf_data['200_MA'].diff()
+
+    # 120일 이동평균선의 기울기가 가장 낮은 지점 찾기
+    min_slope_120_idx = yf_data['120_MA_Slope'].idxmin()
+    min_slope_120_date = yf_data.loc[min_slope_120_idx].name
+    min_slope_120_value = yf_data.loc[min_slope_120_idx, '120_MA']
+
+    # 200일 이동평균선의 기울기가 가장 낮은 지점 찾기
+    min_slope_200_idx = yf_data['200_MA_Slope'].idxmin()
+    min_slope_200_date = yf_data.loc[min_slope_200_idx].name
+    min_slope_200_value = yf_data.loc[min_slope_200_idx, '200_MA']
 
     # 그래프 그리기
     st.subheader(f"{ticker_input} Stock Price with Moving Averages ({selected_period})")
@@ -72,10 +79,18 @@ if not yf_data.empty:
     fig.add_trace(go.Scatter(x=yf_data.index, y=yf_data['200_MA'], mode='lines', name='200-day MA',
                              line=dict(color='blue')))
 
-    # 기울기가 가장 낮은 지점 표시
-    fig.add_trace(go.Scatter(x=[min_slope_date], y=[min_slope_value], mode='markers+text', name='Lowest Slope Point',
-                             marker=dict(color='black', size=10),
-                             text=["Lowest Slope"],
+    # 120일 이동평균선의 기울기가 가장 낮은 지점 표시 (동그라미 모양)
+    fig.add_trace(go.Scatter(x=[min_slope_120_date], y=[min_slope_120_value], mode='markers+text',
+                             name='Lowest Slope Point 120 MA',
+                             marker=dict(color='red', size=12, symbol='circle'),
+                             text=["Lowest Slope 120 MA"],
+                             textposition="top center"))
+
+    # 200일 이동평균선의 기울기가 가장 낮은 지점 표시 (별 모양)
+    fig.add_trace(go.Scatter(x=[min_slope_200_date], y=[min_slope_200_value], mode='markers+text',
+                             name='Lowest Slope Point 200 MA',
+                             marker=dict(color='blue', size=12, symbol='star'),
+                             text=["Lowest Slope 200 MA"],
                              textposition="top center"))
 
     fig.update_layout(
