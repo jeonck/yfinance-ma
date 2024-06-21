@@ -3,7 +3,7 @@ import yfinance as yf
 import pandas as pd
 import plotly.graph_objects as go
 from datetime import datetime, timedelta
-import numpy as np
+import requests
 
 # Streamlit 페이지 설정
 st.set_page_config(
@@ -109,13 +109,19 @@ else:
 
 # 뉴스 가져오기
 st.subheader(f"{ticker_input} News")
-news = ticker.news
-if news:
-    for article in news:
-        st.markdown(f"### [{article['title']}]({article['link']})")
-        st.markdown(f"Published on: {article.get('provider_publish_time', 'N/A')}")
-        st.markdown(f"Source: {article.get('publisher', 'N/A')}")
-        st.write(article.get('summary', 'No summary available'))
-        st.markdown("---")
-else:
-    st.write("No news found for the entered ticker.")
+
+try:
+    news = ticker.get_news()
+    if news:
+        for article in news:
+            st.markdown(f"### [{article['title']}]({article['link']})")
+            st.markdown(f"Published on: {article.get('provider_publish_time', 'N/A')}")
+            st.markdown(f"Source: {article.get('publisher', 'N/A')}")
+            st.write(article.get('summary', 'No summary available'))
+            st.markdown("---")
+    else:
+        st.write("No news found for the entered ticker.")
+except requests.exceptions.JSONDecodeError:
+    st.error("Failed to decode JSON response from the API.")
+except Exception as e:
+    st.error(f"An unexpected error occurred: {e}")
