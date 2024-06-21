@@ -16,7 +16,7 @@ st.set_page_config(
 st.title("Stock Moving Averages Visualization")
 
 # 티커 입력 받기
-ticker_input = st.text_input("Enter the stock ticker:", "MSFT")
+ticker_input = st.text_input("Enter the stock ticker: msft aapl nvda googl tsla amzn tsm lly nov avgo orcl nflx meta qqq ", "QQQ")
 
 # 기간 선택
 period_options = {
